@@ -1,185 +1,147 @@
-import pygame,sys
-from pygame.locals import *
+import pygame
+import random
+
+class Recs():
+    def __init__(self,n_inicial):
+        self.lista=[]
+        for x in range(n_inicial):
+            left_random=random.randrange(2,560)
+            top_random=random.randrange(-580,-10)
+            width_random=random.randrange(10,30)
+            height_random=random.randrange(15,30)
+            self.lista.append(pygame.Rect(left_random,top_random,width_random,height_random))
+
+    def reagregar(self):
+        for x in range(len(self.lista)):
+            if self.lista[x].top>490:
+                left_random=random.randrange(2,560)
+                top_random=random.randrange(-580,-10)
+                width_random=random.randrange(10,30)
+                height_random=random.randrange(15,30)
+                self.lista[x]=(pygame.Rect(left_random,top_random,width_random,height_random))
+            
+    def agregarotro(self):
+        pass
+            
+    def mover(self):
+        for r in self.lista:
+            r.move_ip(0,2)
+            
+    def pintar(self,superficie):
+        for rectangulo in self.lista:
+            pygame.draw.rect(superficie,(200,100,2),rectangulo)
 
 class Player(pygame.sprite.Sprite):
     def __init__(self,imagen):
         self.imagen=imagen
-        self.imagen2=pygame.transform.flip(self.imagen,True,False)
         self.rect=self.imagen.get_rect()
-        self.rect.left=0
-        self.rect.top=454-60-14*5
+        #(self.rect.left,self.rect.top)=(240,150)
+        #(self.rect.centerx,self.rect.centery)=(240,150)
         
-        self.camb=0
-        self.camb_img=[(0,13),(13,13),(26,9),(35,15)]#self.x_init, self.x_w
-        
-        self.camb2=0
-        self.camb_img2=[(0,14),(14,9),(23,14),(37,13)]
-        
-        self.x_init=1###0
-        self.y_init=6
-        self.x_w=12
-        self.y_h=14
-        
-        self.toggle=False
-        #self.rect=pygame.Rect((0, 0, 5*55, 5*70))
-        
-    def move(self,izq,der,pantalla,arriba,cont_up,mira):        
-        if (izq==True) and (der==False) or (arriba  and mira==False):
-            self.toggle=True
-            #######################################3
-            if arriba:
-                self.x_init=self.camb_img2[0][0]
-                self.x_w=self.camb_img2[0][1]
-                
-                if cont_up<=7:
-                    self.rect.move_ip(0,-10)
-                elif cont_up>7 and cont_up<15:
-                    self.rect.move_ip(0,10)
-                else:
-                    self.rect.move_ip(0,0)
-                #self.update(pantalla,self.imagen)
-            
-            #######################################
-            else:
-                self.rect.move_ip(-10,0)   
-                self.camb2=self.camb2+1
-                if self.camb2==2 or  self.camb2==4 or self.camb2==6 : 
-                    if self.camb2==6:
-                        self.camb2=2######0
-                    self.x_init=self.camb_img2[self.camb2/2][0]
-                    self.x_w=self.camb_img2[self.camb2/2][1]
-                    print self.x_init,self.x_w
-            
-            self.update(pantalla,self.imagen2)
-            
-        elif (izq==False) and (der==True) or (arriba and mira==True):
-            self.toggle=False
-            
-            #######################################3
-            if arriba:
-                self.x_init=self.camb_img[3][0]
-                self.x_w=self.camb_img[3][1]
-                
-                if cont_up<=7:
-                    self.rect.move_ip(0,-10)
-                elif cont_up>7 and cont_up<15:
-                    self.rect.move_ip(0,10)
-                else:
-                    self.rect.move_ip(0,0)
-                #self.update(pantalla,self.imagen)
-            
-            #######################################
-            else:
-                self.rect.move_ip(10,0)
-                self.camb=self.camb+1
-                if self.camb==2 or self.camb==4 or  self.camb==6: 
-                    if self.camb==6:
-                        self.camb=2######0
-                    self.x_init=self.camb_img[self.camb/2][0]
-                    self.x_w=self.camb_img[self.camb/2][1]
-                    print self.x_init,self.x_w
-            
-            self.update(pantalla,self.imagen)
-        else:
-            if self.toggle==True:
-                self.x_init=self.camb_img2[3][0]
-                self.x_w=self.camb_img2[3][1]
-                self.rect.move_ip(0,0)
-            
-                self.update(pantalla,self.imagen2)
-                
-            elif self.toggle==False:
-                self.x_init=self.camb_img[0][0]
-                self.x_w=self.camb_img[0][1]
-                self.rect.move_ip(0,0)
-            
-                self.update(pantalla,self.imagen)
-            
-#             else:
-#                 self.x_init=self.camb_img[0][0]
-#                 self.x_w=self.camb_img[0][1]
-#                 self.rect.move_ip(0,0)
-#             
-#                 self.update(pantalla,self.imagen)
-        
+    def mover(self,vx,vy):
+        self.rect.move_ip(vx,vy)
+    
+    def update(self,superficie):
+        superficie.blit(self.imagen, self.rect)
+###########################################################
+###########################################################
+def colision(player,recs):
+    for rec in recs.lista:
+        if player.rect.colliderect(rec):
+            return True
+    return False
 
-        
-    def update(self,pantalla,imagen):
-        pantalla.blit(imagen,self.rect,(5*self.x_init, 5*self.y_init,5*self.x_w, 5*self.y_h))
-        #self.x_init=self.x_init*2
-        #self.x_w=13
-        #self.y_h=14
-    
-if __name__=="__main__":
+def main():
     pygame.init()
-    ventana=pygame.display.set_mode([940,454])
-    reloj = pygame.time.Clock()
+    pantalla=pygame.display.set_mode((600,480))
     salir=False
+    reloj1=pygame.time.Clock()
     
-    img_mario1=pygame.image.load("mario_moviendose3.png").convert_alpha()
-    mario1=Player(img_mario1)
+    pygame.mixer.music.load("mortal.mp3")
+    pygame.mixer.music.play(4)#4: numero de loops
     
-    mundo1=pygame.image.load("mundo.png").convert()
-    #variables auxliares
-    izq=False
-    der=False
-    arriba=False
-    cont_up=0
-    mira=True#der:True, Izqui=False
+    imagen1=pygame.image.load("nave_buena.png")#.convert()
+    imagen1=pygame.transform.scale(imagen1,(50,50))
+    player1=Player(imagen1)
     
-    while salir==False:
+    imagen2=pygame.image.load("bala2.png")#.convert()
+    imagen2=pygame.transform.scale(imagen2,(50,50))
+    player2=Player(imagen2)
+    
+    explosion1=pygame.image.load("explosion_planeta.png")#.convert()
+    explosion1=pygame.transform.scale(explosion1,(50,50))
+    
+    fondo=pygame.image.load("fondo.jpg")
+    fondo=pygame.transform.scale(fondo,(600,480))
+    
+    recs1=Recs(25)
+    
+    vx=0
+    vy=0
+    velocidad=10
+    (left_pre, right_pre, up_pre, down_pre)=(False,False,False,False)
+    colisiono=False
+    
+    while salir!=True:
         for event in pygame.event.get():
             if event.type==pygame.QUIT:
                 salir=True
-                pygame.display.quit()
-                pygame.quit()
-                sys.exit()
-            if event.type==pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    mira=False
-                    print "left"
-                    izq=True
-                    der=False
-                if event.key == pygame.K_RIGHT:
-                    mira=True
-                    print "rght"
-                    der=True
-                    izq=False
+            #if colisiono==False:
+            elif event.type==pygame.KEYDOWN:
+                if event.key==pygame.K_LEFT:
+                    left_pre=True
+                    vx=vx-velocidad
+                    print "left",vx
+                if event.key==pygame.K_RIGHT:
+                    right_pre=True
+                    vx=vx+velocidad
                 if event.key==pygame.K_UP:
-                    arriba=True
-                
+                    up_pre=True
+                    vy=vy-velocidad
+                if event.key==pygame.K_DOWN:
+                    down_pre=True
+                    vy=vy+velocidad    
             elif event.type==pygame.KEYUP:
-                if event.key == pygame.K_LEFT:
-                    if der:
-                        der=True
-                        izq=False
-                    else:
-                        der=False
-                        izq=False
-                        
-                if event.key == pygame.K_RIGHT:
-                    if izq:
-                        der=False
-                        izq=True
-                    else:
-                        der=False
-                        izq=False
-                        
-                if event.type==pygame.K_UP:
-                    pass
+                if event.key==pygame.K_LEFT:
+                    left_pre=False
+                    if right_pre: vx=vx+velocidad
+                    else: vx=0
+                if event.key==pygame.K_RIGHT:
+                    right_pre=False
+                    if left_pre: vx=vx-velocidad
+                    else: vx=0
+                if event.key==pygame.K_UP:
+                    up_pre=False
+                    if down_pre: vy=vy+velocidad
+                    else: vy=0
+                if event.key==pygame.K_DOWN:
+                    down_pre=False
+                    if up_pre: vy=vy-velocidad
+                    else: vy=0            
+                    
         
-        if arriba:
-            cont_up+=1
-            if cont_up==15:
-                cont_up=0
-                arriba=False
-                #der=False
-                #izq=False
-                   
-        reloj.tick(20)
-        ventana.blit(mundo1,(0,0))
-        mario1.move(izq,der,ventana,arriba,cont_up,mira)
-        #mario1.update(ventana)
+        reloj1.tick(20)
+        #pantalla.fill([255,0,100])
+        pantalla.blit(fondo,(0,0))     
+        
+        player2.mover(0,0)
+        player2.update(pantalla)
+   
+        if colision(player1, recs1):
+            colisiono=True
+            player1.imagen=explosion1
+            pygame.mixer.music.stop()
+            
+        if colisiono==False:
+            recs1.mover()
+            player1.mover(vx, vy)
+        
+        player1.update(pantalla)
+        recs1.pintar(pantalla)
         pygame.display.update()
-     
-    pygame.quit()   
+        
+        recs1.reagregar()
+    pygame.quit()
+
+main()    
+    
